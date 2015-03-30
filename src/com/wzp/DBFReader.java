@@ -11,10 +11,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.nutz.json.bean.JsonObject;
-
-import com.alibaba.fastjson.JSONObject;
-import com.wzp.dbf.MarketSH;
+import org.json.JSONObject;
 
 /**
  * DBF 文件读取器
@@ -66,7 +63,7 @@ public class DBFReader {
             DBFReader dbfreader_SH = new DBFReader(new File(szFilePath));
             List<JSONObject> shList = dbfreader_SH.getSHMarketData();
             for(JSONObject market : shList){
-                System.out.println(JSONObject.toJSONString(market));
+                System.out.println(JSONObject.valueToString(market));
             }
         }
         catch (Exception e) {

@@ -22,7 +22,7 @@ public class Server {
     public static String queueName = "testRPC";
     public static String exchangeName = "testExchange";
     private static LinkedBlockingQueue<Channel> chs = new LinkedBlockingQueue<Channel>(200);
-    private static final ExecutorService ess = Executors.newFixedThreadPool(100);
+    private static final ExecutorService ess = Executors.newFixedThreadPool(200);
     private static Connection connection = null;
     public static void main(String[] args){
         String rabbitmqHost = "10.0.30.60";
@@ -39,8 +39,8 @@ public class Server {
             factory.setRequestedHeartbeat(5);
             factory.setConnectionTimeout(10*1000);
             connection = factory.newConnection(Executors.newFixedThreadPool(10));
-            for(int i = 0; i < 100; i++){
-                chs.add(connection.createChannel());
+            for(int i = 0; i < 200; i++){
+//                chs.add(connection.createChannel());
             }
             try{
 //                for(int i = 0; i < 100; i++){
@@ -92,20 +92,20 @@ public class Server {
         @Override
         public void run() {
             try{
-                Channel ch = chs.poll(5, TimeUnit.SECONDS);
+                /*Channel ch = chs.poll(5, TimeUnit.SECONDS);
                 boolean isNeedClose = false;
                 if(ch == null){
                     System.out.println("获取channel超时");
-                    isNeedClose = true;
-                    ch = connection.createChannel();
-                }
+                    isNeedClose = true;*/
+                   Channel ch = connection.createChannel();
+                /*}*/
 //                System.out.println(reply);
                 ch.basicPublish("", reply, null, body);
-                if(isNeedClose){
+//                if(isNeedClose){
                     ch.close();
-                }else{
+                /*}else{
                     chs.add(ch);
-                }
+                }*/
             }catch(Exception e){
                 e.printStackTrace();
             }
