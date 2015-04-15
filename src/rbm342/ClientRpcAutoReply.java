@@ -30,13 +30,13 @@ public class ClientRpcAutoReply {
     final static AtomicInteger count = new AtomicInteger(0);
     
     public static void main(String[] args) {
-        String rabbitmqHost = "10.0.30.60";
+        String rabbitmqHost = "localhost";
         if (args.length > 0)
             rabbitmqHost = args[0];
 
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setUsername("admin");
-        factory.setPassword("admin123");
+        factory.setUsername("guest");
+        factory.setPassword("guest");
         factory.setHost(rabbitmqHost);
         Connection connection = null;
         ExecutorService es = Executors.newFixedThreadPool(200);
