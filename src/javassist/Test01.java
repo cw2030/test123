@@ -36,6 +36,8 @@ public class Test01 {
             body.append("\n}");
             ctMethod.setBody(body.toString());
             
+            
+            
             ctclass.addMethod(ctMethod);
             Class<?> c = ctclass.toClass();
             Object o = c.newInstance();
