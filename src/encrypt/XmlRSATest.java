@@ -1,8 +1,14 @@
 package encrypt;
 
 import java.security.PublicKey;
+import java.security.interfaces.RSAPrivateCrtKey;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
 
+import javax.crypto.Cipher;
+
+import org.apache.commons.net.util.Base64;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,17 +24,35 @@ public class XmlRSATest {
 
     @Test
     public void test() throws Exception{
-        String source = "使用模和指数生成RSA私钥使用模和指数生成RSA私钥使用模和指数生成RSA私钥RSA私钥RSA私钥";
-        source="RSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSAAAAAAAAAAAAAAAAAAAAA";
-        Map<String,String> keys = XmlRSA.rsaParameters(publicKey);
-        PublicKey publicKey = XmlRSA.getPublicKey(keys.get("mudulus"), keys.get("exponent"));
-        String encrypt = XmlRSA.encrypt(source.getBytes("utf-8"),publicKey);
+        String source = "abcefw";
+//        source="RSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSARSAAAAAAAAAAAAAAAAAAAAA";
+        
+        RSAPublicKey rsaPublicKey = XmlRSA.getRSAPublicKey(publicKey);
+        RSAPrivateKey rsaPrivateKey = XmlRSA.getRSAPrivateKey(privateKey);
+        
+        
+        
+        String encrypt = XmlRSA.encrypt(source.getBytes("utf-8"),rsaPrivateKey);
         System.out.println(encrypt);
         
-        Map<String,String> privateKeys = XmlRSA.rsaParameters(privateKey);
         
-        String plainText = XmlRSA.decryptByPrivateKey(encrypt, XmlRSA.getPrivateKey(privateKeys.get("mudulus"), privateKeys.get("exponent")));
+        String plainText = XmlRSA.decryptByPrivateKey(encrypt, rsaPublicKey);
         System.out.println(plainText);
+    }
+    
+    @Test
+    public void test2() throws Exception {
+        try{
+            RSAPublicKey rsaPublicKey = XmlRSA.getRSAPublicKey(publicKey);
+            RSAPrivateKey rsaPrivateKey = XmlRSA.getRSAPrivateKey(privateKey);
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, rsaPublicKey);
+            String encrypt = Base64.encodeBase64String(cipher.doFinal("abcd".getBytes()));
+            System.out.println(encrypt);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        
     }
     
 
