@@ -20,7 +20,7 @@ public class RSATest {
         RSAPublicKey pk = (RSAPublicKey)keys.get(RSA.PUBLIC_KEY);
         RSAPrivateKey priKey = (RSAPrivateKey)keys.get(RSA.PRIVATE_KEY);
         
-        String source = "使用模和指数生成RSA私钥使用模和指数生成RSA私钥使用模和指数生成RSA私钥";
+        String source = "使用模和指数生成RSA私钥使用模和指数生成RSA私钥使用模和指数生成RSA私a使用模";
         String encrypt = RSA.encrypt(source, pk);
         System.out.println(encrypt);
         String plainText = RSA.decrypt(encrypt, priKey);

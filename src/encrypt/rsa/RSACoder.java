@@ -19,9 +19,6 @@ import java.util.Map;
 
 import javax.crypto.Cipher;
 
-import encrypt.XmlRSA;
-import encrypt.XmlRSATest;
-
 /**
  * RSA安全编码组件
  * 
@@ -51,7 +48,7 @@ public abstract class RSACoder {
 	 * 密钥长度必须是64的倍数， 
 	 * 范围在512至65536位之间。
 	 */
-	private static final int KEY_SIZE = 512;
+	private static final int KEY_SIZE = 1024;
 
 	/**
 	 * 私钥解密
@@ -72,14 +69,15 @@ public abstract class RSACoder {
 		KeyFactory keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
 
 		// 生成私钥
-		PrivateKey privateKey = keyFactory.generatePrivate(pkcs8KeySpec);
+		RSAPrivateKey privateKey = (RSAPrivateKey)keyFactory.generatePrivate(pkcs8KeySpec);
 
 		// 对数据解密
 		Cipher cipher = Cipher.getInstance(keyFactory.getAlgorithm());
 
 		cipher.init(Cipher.DECRYPT_MODE, privateKey);
 
-		return cipher.doFinal(data);
+		int maxSize = privateKey.getModulus().bitLength()/8;
+        return decrypt(cipher,data,maxSize);
 	}
 
 	/**
@@ -101,14 +99,15 @@ public abstract class RSACoder {
 		KeyFactory keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
 
 		// 生成公钥
-		PublicKey publicKey = keyFactory.generatePublic(x509KeySpec);
+		RSAPublicKey publicKey = (RSAPublicKey)keyFactory.generatePublic(x509KeySpec);
 
 		// 对数据解密
 		Cipher cipher = Cipher.getInstance(keyFactory.getAlgorithm());
-
+		
 		cipher.init(Cipher.DECRYPT_MODE, publicKey);
-
-		return cipher.doFinal(data);
+		
+        int maxSize = publicKey.getModulus().bitLength()/8;
+        return decrypt(cipher,data,maxSize);
 	}
 
 	/**
@@ -129,14 +128,15 @@ public abstract class RSACoder {
 
 		KeyFactory keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
 
-		PublicKey publicKey = keyFactory.generatePublic(x509KeySpec);
+		RSAPublicKey publicKey = (RSAPublicKey)keyFactory.generatePublic(x509KeySpec);
 
 		// 对数据加密
 		Cipher cipher = Cipher.getInstance(keyFactory.getAlgorithm());
 
 		cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-
-		return cipher.doFinal(data);
+		
+		return encrypt(cipher, data, publicKey.getModulus().bitLength()/8 - 11);
+//		return cipher.doFinal(data);
 	}
 
 	/**
@@ -158,33 +158,52 @@ public abstract class RSACoder {
 		KeyFactory keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
 
 		// 生成私钥
-		PrivateKey privateKey = keyFactory.generatePrivate(pkcs8KeySpec);
+		RSAPrivateKey privateKey = (RSAPrivateKey)keyFactory.generatePrivate(pkcs8KeySpec);
 
 		// 对数据加密
 		Cipher cipher = Cipher.getInstance(keyFactory.getAlgorithm());
 
 		cipher.init(Cipher.ENCRYPT_MODE, privateKey);
-
 		//me
-		int MAXENCRYPTSIZE = 117;
-		int length = data.length;
+		int maxEncryptSize = privateKey.getModulus().bitLength()/8 - 11;
+		return encrypt(cipher,data,maxEncryptSize);
+	}
+	
+	private static byte[] encrypt(Cipher cipher, byte[] data, int maxEncryptSize)throws Exception{
+	    int length = data.length;
         int offset = 0;
         byte[] cache;
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         int i = 0;
         while (length - offset > 0) {
-            if (length - offset > MAXENCRYPTSIZE) {
-                cache = cipher.doFinal(data, offset, MAXENCRYPTSIZE);
+            if (length - offset > maxEncryptSize) {
+                cache = cipher.doFinal(data, offset, maxEncryptSize);
             } else {
                 cache = cipher.doFinal(data, offset, length - offset);
             }
             outStream.write(cache, 0, cache.length);
             i++;
-            offset = i * MAXENCRYPTSIZE;
+            offset = i * maxEncryptSize;
         }
-		//me
         return outStream.toByteArray();
-//		return cipher.doFinal(data);
+	}
+	
+	private static byte[] decrypt(Cipher cipher, byte[] data, int maxEncryptSize)throws Exception{
+	    if(data.length <= maxEncryptSize){
+            return cipher.doFinal(data);
+        }
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        int dataLength = data.length;
+        int offset = 0;
+        while(dataLength > offset){
+            if (dataLength - offset > maxEncryptSize) {
+                output.write(cipher.doFinal(data,offset,maxEncryptSize));
+            }else{
+                output.write(cipher.doFinal(data,offset,dataLength - offset));
+            }
+            offset += maxEncryptSize;
+        }
+        return output.toByteArray();
 	}
 
 	/**
@@ -240,12 +259,12 @@ public abstract class RSACoder {
 		// 公钥
 		RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
 		//me
-		publicKey = XmlRSA.getRSAPublicKey(XmlRSATest.publicKey);
+		publicKey = XmlRSA.getRSAPublicKey(XmlRSAKeyValue.publicKey);
 
 		// 私钥
 		RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
 		//
-		privateKey = XmlRSA.getRSAPrivateKey(XmlRSATest.privateKey);
+		privateKey = XmlRSA.getRSAPrivateKey(XmlRSAKeyValue.privateKey);
 
 		// 封装密钥
 		Map<String, Object> keyMap = new HashMap<String, Object>(2);

@@ -57,7 +57,7 @@ public class RSACoderTest {
 
 		System.err.println("\n---私钥加密——公钥解密---");
 
-		String inputStr1 = "RSA加密算法RSA加密算法RSA加密算法RSA加密算法RSA加密算法算法RSA加密算法";
+		String inputStr1 = "RSA加密算法RSA加密awf";
 		byte[] data1 = inputStr1.getBytes();
 		System.err.println("原文:\n" + inputStr1);
 
@@ -76,6 +76,7 @@ public class RSACoderTest {
 
 		System.err.println("\n---公钥加密——私钥解密---");
 		String inputStr2 = "RSA Encypt Algorithm";
+		inputStr2 = inputStr1;
 		byte[] data2 = inputStr2.getBytes();
 		System.err.println("原文:\n" + inputStr2);
 

@@ -1,4 +1,4 @@
-package encrypt;
+package encrypt.rsa;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -161,112 +161,6 @@ public class XmlRSA {
         return Base64.encodeBase64String(input);
     }
 
-    public static String encrypt(byte[] source, RSAPrivateKey privateKey)
-            throws Exception {
-        String encryptData = "";
-//        Security.addProvider(new BouncyCastleProvider()); 
-        try {
-            Cipher cipher = Cipher.getInstance("RSA");
-            cipher.init(Cipher.ENCRYPT_MODE, privateKey);
-            System.out.println(privateKey.getModulus().bitLength()/8);
-            int length = source.length;
-            int offset = 0;
-            byte[] cache;
-            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-            int i = 0;
-            while (length - offset > 0) {
-                if (length - offset > MAXENCRYPTSIZE) {
-                    cache = cipher.doFinal(source, offset, MAXENCRYPTSIZE);
-                } else {
-                    cache = cipher.doFinal(source, offset, length - offset);
-                }
-                outStream.write(cache, 0, cache.length);
-                i++;
-                offset = i * MAXENCRYPTSIZE;
-            }
-            return encodeBase64(outStream.toByteArray());
-        }
-        catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        }
-        catch (InvalidKeyException e) {
-            e.printStackTrace();
-        }
-        catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
-        }
-        catch (BadPaddingException e) {
-            e.printStackTrace();
-        }
-        return encryptData;
-    }
-
-    public static String decryptByPrivateKey(String data, RSAPublicKey publicKey)
-            throws Exception {
-//        Security.addProvider(new BouncyCastleProvider()); 
-        Cipher cipher = Cipher.getInstance("RSA");
-        cipher.init(Cipher.DECRYPT_MODE, publicKey);
-        // 模长
-        int key_len = publicKey.getModulus().bitLength() / 8;
-        byte[] bytes = data.getBytes();
-        byte[] bcd = ASCII_To_BCD(bytes, bytes.length);
-        System.err.println(bcd.length);
-        // 如果密文长度大于模长则要分组解密
-        String ming = "";
-        byte[][] arrays = splitArray(bcd, key_len);
-        for (byte[] arr : arrays) {
-            ming += new String(cipher.doFinal(arr));
-        }
-        return ming;
-    }
-
-    public static byte[] ASCII_To_BCD(byte[] ascii, int asc_len) {
-        byte[] bcd = new byte[asc_len / 2];
-        int j = 0;
-        for (int i = 0; i < (asc_len + 1) / 2; i++) {
-            bcd[i] = asc_to_bcd(ascii[j++]);
-            bcd[i] = (byte) (((j >= asc_len) ? 0x00 : asc_to_bcd(ascii[j++])) + (bcd[i] << 4));
-        }
-        return bcd;
-    }
-
-    public static byte asc_to_bcd(byte asc) {
-        byte bcd;
-
-        if ((asc >= '0') && (asc <= '9'))
-            bcd = (byte) (asc - '0');
-        else if ((asc >= 'A') && (asc <= 'F'))
-            bcd = (byte) (asc - 'A' + 10);
-        else if ((asc >= 'a') && (asc <= 'f'))
-            bcd = (byte) (asc - 'a' + 10);
-        else
-            bcd = (byte) (asc - 48);
-        return bcd;
-    }
-
-    public static byte[][] splitArray(byte[] data, int len) {
-        int x = data.length / len;
-        int y = data.length % len;
-        int z = 0;
-        if (y != 0) {
-            z = 1;
-        }
-        byte[][] arrays = new byte[x + z][];
-        byte[] arr;
-        for (int i = 0; i < x + z; i++) {
-            arr = new byte[len];
-            if (i == x + z - 1 && y != 0) {
-                System.arraycopy(data, i * len, arr, 0, y);
-            } else {
-                System.arraycopy(data, i * len, arr, 0, len);
-            }
-            arrays[i] = arr;
-        }
-        return arrays;
-    }
 
     private static final byte[] b64decode(String data) {
         try {
